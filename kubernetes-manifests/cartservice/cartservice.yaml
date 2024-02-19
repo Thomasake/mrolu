@@ -15,16 +15,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: emailservice
+  name: cartservice
+  namespace: micro
 spec:
   selector:
     matchLabels:
-      app: emailservice
+      app: cartservice
   template:
     metadata:
       labels:
-        app: emailservice
+        app: cartservice
     spec:
+      imagePullSecrets:
+      - name: ecr-registry-secret  
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
       securityContext:
@@ -41,39 +44,26 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: emailservice
+        image: 532739883212.dkr.ecr.us-west-2.amazonaws.com/cartservice:1
         ports:
-        - containerPort: 8080
+        - containerPort: 7070
         env:
-        - name: PORT
-          value: "8080"
-        - name: DISABLE_PROFILER
-          value: "1"
-        readinessProbe:
-          periodSeconds: 5
-          grpc:
-            port: 8080
-        livenessProbe:
-          periodSeconds: 5
-          grpc:
-            port: 8080
+        - name: REDIS_ADDR
+          value: "redis-cart:6379"
         resources:
           requests:
-            cpu: 100m
+            cpu: 200m
             memory: 64Mi
           limits:
-            cpu: 200m
+            cpu: 300m
             memory: 128Mi
+        readinessProbe:
+          initialDelaySeconds: 15
+          grpc:
+            port: 7070
+        livenessProbe:
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          grpc:
+            port: 7070
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: emailservice
-spec:
-  type: ClusterIP
-  selector:
-    app: emailservice
-  ports:
-  - name: grpc
-    port: 5000
-    targetPort: 8080

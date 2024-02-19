@@ -16,6 +16,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: checkoutservice
+  namespace: micro
 spec:
   selector:
     matchLabels:
@@ -25,6 +26,8 @@ spec:
       labels:
         app: checkoutservice
     spec:
+      imagePullSecrets:
+      - name: ecr-registry-secret  
       serviceAccountName: default
       securityContext:
         fsGroup: 1000
@@ -40,7 +43,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: checkoutservice
+          image: 532739883212.dkr.ecr.us-west-2.amazonaws.com/checkoutservice:1
           ports:
           - containerPort: 5050
           readinessProbe:
@@ -71,16 +74,4 @@ spec:
             limits:
               cpu: 200m
               memory: 128Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: checkoutservice
-spec:
-  type: ClusterIP
-  selector:
-    app: checkoutservice
-  ports:
-  - name: grpc
-    port: 5050
-    targetPort: 5050
+

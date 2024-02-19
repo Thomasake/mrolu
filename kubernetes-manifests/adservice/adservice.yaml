@@ -15,16 +15,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: currencyservice
+  name: adservice
+  namespace: micro
 spec:
   selector:
     matchLabels:
-      app: currencyservice
+      app: adservice
   template:
     metadata:
       labels:
-        app: currencyservice
+        app: adservice
     spec:
+      imagePullSecrets:
+      - name: ecr-registry-secret    
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
       securityContext:
@@ -41,38 +44,40 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: currencyservice
+        image: 532739883212.dkr.ecr.us-west-2.amazonaws.com/adservice:1
         ports:
-        - name: grpc
-          containerPort: 7000
+        - containerPort: 9555
         env:
         - name: PORT
-          value: "7000"
-        - name: DISABLE_PROFILER
-          value: "1"
-        readinessProbe:
-          grpc:
-            port: 7000
-        livenessProbe:
-          grpc:
-            port: 7000
+          value: "9555"
         resources:
           requests:
-            cpu: 100m
-            memory: 64Mi
-          limits:
             cpu: 200m
-            memory: 128Mi
+            memory: 180Mi
+          limits:
+            cpu: 300m
+            memory: 300Mi
+        readinessProbe:
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          grpc:
+            port: 9555
+        livenessProbe:
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          grpc:
+            port: 9555
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: currencyservice
+  name: adservice
+  namespace: micro
 spec:
   type: ClusterIP
   selector:
-    app: currencyservice
+    app: adservice
   ports:
   - name: grpc
-    port: 7000
-    targetPort: 7000
+    port: 9555
+    targetPort: 9555

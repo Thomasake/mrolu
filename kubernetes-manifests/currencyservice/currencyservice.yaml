@@ -15,17 +15,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: shippingservice
+  name: currencyservice
+  namespace: micro
 spec:
   selector:
     matchLabels:
-      app: shippingservice
+      app: currencyservice
   template:
     metadata:
       labels:
-        app: shippingservice
+        app: currencyservice
     spec:
+      imagePullSecrets:
+      - name: ecr-registry-secret  
       serviceAccountName: default
+      terminationGracePeriodSeconds: 5
       securityContext:
         fsGroup: 1000
         runAsGroup: 1000
@@ -40,21 +44,21 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: shippingservice
+        image: 532739883212.dkr.ecr.us-west-2.amazonaws.com/currencyservice:1
         ports:
-        - containerPort: 50051
+        - name: grpc
+          containerPort: 7000
         env:
         - name: PORT
-          value: "50051"
+          value: "7000"
         - name: DISABLE_PROFILER
           value: "1"
         readinessProbe:
-          periodSeconds: 5
           grpc:
-            port: 50051
+            port: 7000
         livenessProbe:
           grpc:
-            port: 50051
+            port: 7000
         resources:
           requests:
             cpu: 100m
@@ -63,15 +67,3 @@ spec:
             cpu: 200m
             memory: 128Mi
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: shippingservice
-spec:
-  type: ClusterIP
-  selector:
-    app: shippingservice
-  ports:
-  - name: grpc
-    port: 50051
-    targetPort: 50051
