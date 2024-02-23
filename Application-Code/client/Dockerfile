@@ -1,8 +1,7 @@
 FROM node:20.11.1 AS web-build
 WORKDIR /usr/src/app
 COPY ./ ./client
-RUN cd client && npm install && npm run build --prod
-
+RUN cd client && npm install && npm run build 
 # Use official nginx image as the base image
 FROM nginx:latest
 
