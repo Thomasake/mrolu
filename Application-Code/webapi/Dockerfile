@@ -2,6 +2,7 @@ FROM openjdk:latest AS BUILD_IMAGE
 WORKDIR /usr/src/app/
 #RUN apt update && yum install maven -y
 #RUN choco install maven -y
+FROM alpine:latest
 RUN apk update && apk add Maven -y
 COPY ./ /usr/src/app/
 RUN mvn install -DskipTests
