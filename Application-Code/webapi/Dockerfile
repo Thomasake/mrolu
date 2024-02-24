@@ -1,16 +1,15 @@
-FROM maven:3.5.4-jdk-8-alpine as maven
+FROM openjdk:latest AS BUILD_IMAGE
+WORKDIR /usr/src/app/
+#RUN apt update && yum install maven -y
+#RUN choco install maven -y
+RUN apt update && apt install maven -y
+COPY ./ /usr/src/app/
+RUN mvn install -DskipTests
 
-COPY ./pom.xml ./pom.xml
-COPY ./src ./src
-
-RUN mvn dependency:go-offline -B
-
-RUN mvn package
-
-FROM openjdk:8u171-jre-alpine
+FROM openjdk:latest
 
 WORKDIR /usr/src/app/
-COPY --from=maven  /usr/src/app/target/book-work-0.0.1-SNAPSHOT.jar ./book-work-0.0.1.jar
+COPY --from=BUILD_IMAGE /usr/src/app/target/book-work-0.0.1-SNAPSHOT.jar ./book-work-0.0.1.jar
 
 EXPOSE 9000
 ENTRYPOINT ["java","-jar","book-work-0.0.1.jar"]
