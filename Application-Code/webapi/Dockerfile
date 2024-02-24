@@ -1,4 +1,4 @@
-FROM openjdk:latest AS BUILD_IMAGE
+FROM alpine:latest AS BUILD_IMAGE
 WORKDIR /usr/src/app/
 #RUN apt update && yum install maven -y
 #RUN choco install maven -y
