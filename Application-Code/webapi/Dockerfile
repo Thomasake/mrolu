@@ -1,22 +1,16 @@
-FROM openjdk:latest AS BUILD_IMAGE
-WORKDIR /usr/src/app/
-#RUN apt update && yum install maven -y
-#RUN choco install maven -y
-FROM alpine:latest
-RUN apk add --no-cache wget ca-certificates
-RUN wget https://apache.mirrors.benatherton.com/maven/maven-3/3.8.3/binaries/apache-maven-3.8.3-bin.tar.gz && \
-    tar -xzf apache-maven-3.8.3-bin.tar.gz && \
-    rm apache-maven-3.8.3-bin.tar.gz
-RUN mv apache-maven-3.8.3 /opt/maven && \
-    ln -s /opt/maven/bin/mvn /usr/bin/mvn
+FROM maven:3.5.4-jdk-8-alpine as maven
 
-COPY ./ /usr/src/app/
-RUN mvn install -DskipTests
+COPY ./pom.xml ./pom.xml
+COPY ./src ./src
 
-FROM openjdk:latest
+RUN mvn dependency:go-offline -B
+
+RUN mvn package
+
+FROM openjdk:8u171-jre-alpine
 
 WORKDIR /usr/src/app/
-COPY --from=BUILD_IMAGE /usr/src/app/target/book-work-0.0.1-SNAPSHOT.jar ./book-work-0.0.1.jar
+COPY --from=maven  /usr/src/app/target/book-work-0.0.1-SNAPSHOT.jar ./book-work-0.0.1.jar
 
 EXPOSE 9000
 ENTRYPOINT ["java","-jar","book-work-0.0.1.jar"]
